@@ -1,146 +1,77 @@
 <script lang="ts">
-	import { tick } from 'svelte';
-	import { fade } from 'svelte/transition';
-	import { type Product } from '../utils/products';
-	import * as Select from '$lib/components/ui/select';
-	import {
-		currentPage,
-		description as storeDescription,
-		filterOptions,
-		name,
-		selectedCategory,
-		title as storeTitle
-	} from './store';
-
+	import { page } from '$app/stores';
+	import { derived } from 'svelte/store';
+	import { name as storeName, title as storeTitle, description as storeDescription } from './store';
 	import StaggeredGrid from '$lib/components/grid/StaggeredGrid.svelte';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import ScrollToTop from '$lib/components/pagination/ScrollToTop.svelte';
 
-	const itemsPerPage = 12;
-
 	let { data } = $props();
-
-	const allProducts: Product[] = $derived(data.allProducts);
-	const filter: string = $derived(data.filter);
-
-	let filteredProducts = $derived(
-		$selectedCategory === 'All Products'
-			? allProducts
-			: allProducts.filter((product) => product.categories.includes($selectedCategory))
-	);
-
-	let paginatedProducts: Product[] = $derived(
-		filteredProducts.slice(($currentPage - 1) * itemsPerPage, $currentPage * itemsPerPage)
-	);
-
-	let totalPages = $derived(Math.ceil(filteredProducts.length / itemsPerPage));
-
-	function generateFiltersLink(filter: unknown): string {
-		const currentUrl = new URL(window.location.href);
-		currentUrl.searchParams.delete('page');
-		currentUrl.searchParams.set('filter', filter as string);
-		return `${currentUrl.pathname}?${currentUrl.searchParams.toString()}`;
-	}
-
-	let selectedFilter = $state({ value: filterOptions[0].value, label: filterOptions[0].label });
-
-	$effect(() => {
-		if ($currentPage > 1) {
-			const navigation = document.getElementById('navigation');
-			if (navigation) {
-				tick().then(() => {
-					navigation.scrollIntoView();
-				});
-			}
-		}
-
-		if (selectedFilter.value !== filter) {
-			selectedFilter = filterOptions.find((item) => item.value === filter) ?? selectedFilter;
-		}
-	});
-
-	const title = name + ' | ' + storeTitle;
-	const description = storeDescription;
-	const ogImage = `${data.origin}/thumbnail.png`;
+	const allProducts = $derived(data.allProducts);
 </script>
 
 <svelte:head>
-	<title>{title}</title>
-	<meta name="description" content={description} />
-
-	<meta property="og:title" content={title} />
-	<meta name="twitter:title" content={title} />
-	<!-- Description -->
-	<meta name="description" content={description} />
-	<meta property="og:description" content={description} />
-	<meta name="twitter:description" content={description} />
-
-	<!-- Image -->
-	<meta property="og:image" content={ogImage} />
-	<meta property="og:image:width" content="1200" />
-	<meta property="og:image:height" content="630" />
-	<meta name="twitter:image" content={ogImage} />
+	<title>{storeTitle}</title>
+	<meta name="description" content={storeDescription} />
 </svelte:head>
 
-{#key `${paginatedProducts.length} + ${$selectedCategory}`}
-	<div
-		in:fade={{ duration: 150, delay: 125 }}
-		class="mx-auto mb-16 mt-[54px] flex w-full max-w-6xl flex-col gap-8 px-4 sm:px-8 lg:mt-[72px] lg:px-16"
-	>
-		<div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-			<h1
-				class="text-[40px] font-normal leading-[44px] tracking-[-0.4px] text-[#19191C] dark:text-[#e6e6e3]"
-			>
-				{$selectedCategory}
-			</h1>
-
-			<div class="filter-selection">
-				<Select.Root selected={selectedFilter}>
-					<Select.Trigger
-						aria-label="Select filter option"
-						class="w-full dark:border-[#2c2c2f] dark:bg-[#1b1b1b] dark:text-[#d1d1cd] md:w-[240px]"
-					>
-						<Select.Value
-							placeholder="Sort via filters"
-							class="data-[placeholder]:font-inter data-[placeholder]:text-[16px] data-[placeholder]:font-medium data-[placeholder]:!text-[#2D2D31] dark:data-[placeholder]:!text-[#d1d1cd]"
-						/>
-					</Select.Trigger>
-					<Select.Content class="border-[#f4f4f7] bg-white dark:border-[#2c2c2f] dark:bg-[#1b1b1b]">
-						{#each filterOptions as filter}
-							<a href={generateFiltersLink(filter.value)}>
-								<Select.Item
-									class="cursor-pointer text-[#2D2D31] hover:bg-[#f9f9fa] data-[selected]:bg-[#f4f4f7] dark:text-[#d1d1cd] dark:hover:bg-[#2c2c2f] data-[selected]:dark:bg-[#3a3a3d]"
-									value={filter.value}
-									label={filter.label}
-								>
-									{filter.label}
-								</Select.Item>
-							</a>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
+<div class="min-h-screen bg-[#121212] text-white pb-20">
+	<!-- App Header -->
+	<header class="bg-[#006400] px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-40">
+		<h1 class="text-base font-bold tracking-wide text-white">BEX-MARKET.ng</h1>
+		<div class="flex items-center space-x-4">
+			<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+			<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
 		</div>
+	</header>
 
-		{#if paginatedProducts.length > 0}
-			<StaggeredGrid products={paginatedProducts} selectedFilter={selectedFilter.value} />
-
-			{#if totalPages > 1}
-				<Pagination currentPage={$currentPage} {totalPages} selectedFilter={selectedFilter.value} />
-			{/if}
-
-			<ScrollToTop />
-		{:else}
-			<p class="mt-12 min-h-[125px] text-center text-gray-500">
-				No products found for this category.
-			</p>
-		{/if}
+	<!-- Location Bar -->
+	<div class="bg-[#005000] px-4 py-2 text-xs flex items-center text-gray-200">
+		<span class="mr-1">📍</span> All Locations ▼
 	</div>
-{/key}
 
-<style>
-	:global(.filter-selection svg) {
-		width: 20px !important;
-		height: 20px !important;
-	}
-</style>
+	<!-- Promo Banner -->
+	<div class="p-4">
+		<div class="bg-[#ff8c00] rounded-xl p-4 flex justify-between items-center shadow-lg">
+			<div>
+				<h2 class="text-black font-bold text-base">Buy affordable products</h2>
+				<button class="mt-2 bg-white text-black text-xs font-semibold px-3 py-1.5 rounded-full shadow">Shop Now</button>
+			</div>
+			<div class="text-3xl">🛒</div>
+		</div>
+	</div>
+
+	<!-- Categories Bar -->
+	<div class="px-4 py-2">
+		<h3 class="text-sm font-semibold mb-3 text-gray-300">Categories</h3>
+		<div class="grid grid-cols-6 gap-2 text-center text-xs text-gray-200">
+			<div class="flex flex-col items-center"><div class="w-10 h-10 bg-[#222] border border-gray-700 rounded-full flex items-center justify-center mb-1 text-sm">🛍️</div>All</div>
+			<div class="flex flex-col items-center"><div class="w-10 h-10 bg-[#222] border border-gray-700 rounded-full flex items-center justify-center mb-1 text-sm">👔</div>Fashion</div>
+			<div class="flex flex-col items-center"><div class="w-10 h-10 bg-[#222] border border-gray-700 rounded-full flex items-center justify-center mb-1 text-sm">💻</div>Electronics</div>
+			<div class="flex flex-col items-center"><div class="w-10 h-10 bg-[#222] border border-gray-700 rounded-full flex items-center justify-center mb-1 text-sm">📱</div>Phones</div>
+			<div class="flex flex-col items-center"><div class="w-10 h-10 bg-[#222] border border-gray-700 rounded-full flex items-center justify-center mb-1 text-sm">🖥️</div>Computing</div>
+			<div class="flex flex-col items-center"><div class="w-10 h-10 bg-[#222] border border-gray-700 rounded-full flex items-center justify-center mb-1 text-sm">💄</div>Beauty</div>
+		</div>
+	</div>
+
+	<!-- Main Product Section -->
+	<div class="px-4 py-4" id="navigation">
+		<div class="flex justify-between items-center mb-3">
+			<h3 class="text-base font-bold text-white">Popular Products</h3>
+			<span class="text-xs text-gray-400">View All</span>
+		</div>
+		
+		<!-- Dynamic Product Feed -->
+		<StaggeredGrid products={allProducts} />
+	</div>
+
+	<!-- Bottom Navigation Bar (App Style) -->
+	<nav class="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-gray-800 flex justify-around py-2.5 text-xs text-gray-400 z-50">
+		<button class="flex flex-col items-center text-green-500 font-medium">🏠 Home</button>
+		<button class="flex flex-col items-center hover:text-white">❤️ Favorite</button>
+		<button class="flex flex-col items-center hover:text-white">🛒 Market</button>
+		<button class="flex flex-col items-center hover:text-white">👤 Profile</button>
+	</nav>
+
+	<ScrollToTop />
+</div>
