@@ -6,8 +6,6 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import { isProductTransition } from '../utils/products';
-	import Footer from '$lib/components/footer/Footer.svelte';
-	import SiteHeader from '$lib/components/header/SiteHeader.svelte';
 	import { account } from '$lib/stores/account.svelte';
 	import { setCookie } from '../utils/cookies';
 
@@ -33,7 +31,7 @@
 			.then((prefs) => cart.loadPrefs(prefs?.cart ?? []));
 	});
 
-	onNavigate((navigation) => {
+N	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
 
 		const currentPath = $page.url.pathname;
@@ -50,10 +48,6 @@
 	});
 </script>
 
-<SiteHeader />
-
-<main>
+<div class="min-h-screen bg-[#121212] text-white">
 	{@render children()}
-</main>
-
-<Footer />
+</div>
