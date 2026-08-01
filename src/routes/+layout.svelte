@@ -31,7 +31,7 @@
 			.then((prefs) => cart.loadPrefs(prefs?.cart ?? []));
 	});
 
-N	onNavigate((navigation) => {
+	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
 
 		const currentPath = $page.url.pathname;
