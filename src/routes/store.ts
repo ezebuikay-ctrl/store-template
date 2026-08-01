@@ -3,10 +3,10 @@ import { derived } from 'svelte/store';
 
 export const categories = ['All Products', 'Tops', 'Sweaters', 'Bottoms', 'Shoes', 'Accessories'];
 
-export const title = 'bexmarket.ng';
+export const title = 'BEX-MARKET.ng';
 export const description =
 	'A modern template designed for online stores with a mobile-friendly interface, customizable theme, and an integrated payments using Stripe.';
-export const name = 'bexmarket.ng';
+export const name = 'BEX-MARKET.ng';
 
 export const filterOptions = [
 	{ value: 'popular', label: 'Popular' },
