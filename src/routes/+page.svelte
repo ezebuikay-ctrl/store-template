@@ -3,11 +3,29 @@
 
 	let { data } = $props();
 	
-	// Fallback products if backend data isn't loaded yet
-	const products = data?.allProducts?.length ? data.allProducts : [
-		{ name: 'shoe', price: '₦0.0', images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'] },
-		{ name: 'JORDAN 1 low', price: '₦0.0', images: ['https://images.unsplash.com/photo-1552346154-21d32810aba3?w=500'] }
+	// Pull live products from Appwrite backend data or use fallbacks if empty
+	const rawProducts = data?.allProducts?.length ? data.allProducts : [
+		{ name: 'shoe', price: '0.0', images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'] },
+		{ name: 'JORDAN 1 low', price: '0.0', images: ['https://images.unsplash.com/photo-1552346154-21d32810aba3?w=500'] }
 	];
+
+	// Map products to guarantee image and price rendering consistency across app & web
+	const products = rawProducts.map((p: any) => {
+		let imageUrl = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500';
+
+		if (p.imageId) {
+			imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${p.bucketId || 'default'}/files/${p.imageId}/view?project=${p.projectId || 'default'}`;
+		} else if (p.images && p.images.length > 0) {
+			imageUrl = p.images[0];
+		} else if (p.image) {
+			imageUrl = p.image;
+		}
+
+		return {
+			...p,
+			displayImage: imageUrl
+		};
+	});
 </script>
 
 <svelte:head>
@@ -66,14 +84,14 @@
 				<div class="bg-[#1e1e1e] rounded-xl overflow-hidden border border-gray-800 shadow-md">
 					<div class="w-full h-36 bg-gray-800 flex items-center justify-center overflow-hidden">
 						<img 
-							src={product.imageId ? `https://cloud.appwrite.io/v1/storage/buckets/${product.bucketId}/files/${product.imageId}/view?project=${product.projectId}` : (product.images?.[0] || product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500')} 
+							src={product.displayImage} 
 							alt={product.name} 
 							class="w-full h-full object-cover" 
 						/>
 					</div>
 					<div class="p-3">
 						<h4 class="text-sm text-gray-200 font-medium truncate">{product.name}</h4>
-						<p class="text-white font-bold text-base mt-1">{product.price ? `₦${product.price}` : '₦0.0'}</p>
+						<p class="text-white font-bold text-base mt-1">₦{product.price || '0.0'}</p>
 					</div>
 				</div>
 			{/each}
