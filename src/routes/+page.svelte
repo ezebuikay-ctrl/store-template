@@ -65,7 +65,11 @@
 			{#each products as product}
 				<div class="bg-[#1e1e1e] rounded-xl overflow-hidden border border-gray-800 shadow-md">
 					<div class="w-full h-36 bg-gray-800 flex items-center justify-center overflow-hidden">
-						<img src={product.images?.[0] || product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'} alt={product.name} class="w-full h-full object-cover" />
+						<img 
+							src={product.imageId ? `https://cloud.appwrite.io/v1/storage/buckets/${product.bucketId}/files/${product.imageId}/view?project=${product.projectId}` : (product.images?.[0] || product.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500')} 
+							alt={product.name} 
+							class="w-full h-full object-cover" 
+						/>
 					</div>
 					<div class="p-3">
 						<h4 class="text-sm text-gray-200 font-medium truncate">{product.name}</h4>
