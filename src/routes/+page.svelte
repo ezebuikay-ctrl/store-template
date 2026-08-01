@@ -9,15 +9,20 @@
 		{ name: 'JORDAN 1 low', price: '0.0', images: ['https://images.unsplash.com/photo-1552346154-21d32810aba3?w=500'] }
 	];
 
-	// Map products to guarantee image and price rendering consistency across app & web
+	// Map products to correctly resolve Appwrite database image fields
 	const products = rawProducts.map((p: any) => {
 		let imageUrl = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500';
 
-		if (p.imageId) {
-			imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${p.bucketId || 'default'}/files/${p.imageId}/view?project=${p.projectId || 'default'}`;
+		// Check if 'image' or 'imageId' or 'fileId' holds an Appwrite file ID (usually a 20-character alphanumeric string)
+		const fileId = p.imageId || p.fileId || (typeof p.image === 'string' && p.image.length < 50 ? p.image : null);
+
+		if (fileId) {
+			const bucket = p.bucketId || 'default';
+			const project = p.projectId || 'default';
+			imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${bucket}/files/${fileId}/view?project=${project}`;
 		} else if (p.images && p.images.length > 0) {
 			imageUrl = p.images[0];
-		} else if (p.image) {
+		} else if (typeof p.image === 'string' && p.image.startsWith('http')) {
 			imageUrl = p.image;
 		}
 
