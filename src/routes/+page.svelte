@@ -3,27 +3,33 @@
 
 	let { data } = $props();
 	
-	// Pull live products from Appwrite backend data or use fallbacks if empty
+	// Pull live products or use reliable Unsplash placeholders for testing
 	const rawProducts = data?.allProducts?.length ? data.allProducts : [
-		{ name: 'shoe', price: '0.0', images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'] },
-		{ name: 'JORDAN 1 low', price: '0.0', images: ['https://images.unsplash.com/photo-1552346154-21d32810aba3?w=500'] }
+		{ name: 'Heavy Blouse', price: '40', image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500' },
+		{ name: 'Stylish Top', price: '35', image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500' }
 	];
 
-	// Map products to correctly resolve Appwrite database image fields
+	// Direct check against your Appwrite endpoint configuration or raw values
 	const products = rawProducts.map((p: any) => {
 		let imageUrl = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500';
 
-		// Check if 'image' or 'imageId' or 'fileId' holds an Appwrite file ID (usually a 20-character alphanumeric string)
-		const fileId = p.imageId || p.fileId || (typeof p.image === 'string' && p.image.length < 50 ? p.image : null);
-
-		if (fileId) {
-			const bucket = p.bucketId || 'default';
-			const project = p.projectId || 'default';
-			imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${bucket}/files/${fileId}/view?project=${project}`;
-		} else if (p.images && p.images.length > 0) {
-			imageUrl = p.images[0];
-		} else if (typeof p.image === 'string' && p.image.startsWith('http')) {
+		// If p.image is a full URL or relative path
+		if (p.image && typeof p.image === 'string' && p.image.startsWith('http')) {
 			imageUrl = p.image;
+		} 
+		// If p.image holds an Appwrite file ID directly
+		else if (p.image && typeof p.image === 'string') {
+			imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/products/files/${p.image}/view?project=6808761200388d752ca8`;
+		}
+		// If explicit imageId is provided
+		else if (p.imageId) {
+			imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/${p.bucketId || 'products'}/files/${p.imageId}/view?project=${p.projectId || '6808761200388d752ca8'}`;
+		}
+		// If images array exists
+		else if (Array.isArray(p.images) && p.images.length > 0) {
+			imageUrl = p.images[0].startsWith('http') 
+				? p.images[0] 
+				: `https://cloud.appwrite.io/v1/storage/buckets/products/files/${p.images[0]}/view?project=6808761200388d752ca8`;
 		}
 
 		return {
@@ -92,6 +98,7 @@
 							src={product.displayImage} 
 							alt={product.name} 
 							class="w-full h-full object-cover" 
+							onerror={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500'; }}
 						/>
 					</div>
 					<div class="p-3">
