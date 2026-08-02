@@ -1,0 +1,4 @@
+08.02 10:42
+app-ads.txt
+google.com, pub-9972987433387087, DIRECT, f08c47fec0942fa0
+
